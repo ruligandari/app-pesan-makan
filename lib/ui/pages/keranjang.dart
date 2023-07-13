@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:kedai_1818/services/api_endpoints.dart';
 import 'package:kedai_1818/shared/themes.dart';
+import 'package:kedai_1818/ui/pages/detail_keranjang.dart';
 import 'package:kedai_1818/ui/pages/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -112,6 +113,14 @@ class _KeranjangState extends State<Keranjang> {
     );
   }
 
+  void detail(id, nama_produk, kuantitas, id_keranjang) {
+    Navigator.push(
+        context,
+        (MaterialPageRoute(
+            builder: (context) =>
+                DetailKeranjang(id, nama_produk, kuantitas, id_keranjang))));
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -127,7 +136,6 @@ class _KeranjangState extends State<Keranjang> {
       var kuantitas = data[i]['kuantitas'];
       total += int.parse(harga) * int.parse(kuantitas);
     }
-    print("reload");
     return Scaffold(
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: Container(
@@ -193,6 +201,13 @@ class _KeranjangState extends State<Keranjang> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                         child: ListTile(
+                          onTap: () {
+                            detail(
+                                data[index]['id'],
+                                data[index]['nama_produk'],
+                                data[index]['kuantitas'],
+                                data[index]['id_keranjang']);
+                          },
                           leading: Image.network(
                               "$endpoints/foto/${data[index]['foto']}"),
                           title: Text(
