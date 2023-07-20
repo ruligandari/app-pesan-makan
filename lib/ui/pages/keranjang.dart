@@ -62,7 +62,7 @@ class _KeranjangState extends State<Keranjang> {
     }
   }
 
-  void checkout() {
+  void checkout(total) {
     // menampilkan alert
     showDialog(
       context: context,
@@ -95,6 +95,9 @@ class _KeranjangState extends State<Keranjang> {
                     "Dine In",
                     style: titleTextStyle.copyWith(fontSize: 14),
                   ),
+                  onTap: () {
+                    transaksi(2, total);
+                  },
                 ),
               ),
               Card(
@@ -111,6 +114,34 @@ class _KeranjangState extends State<Keranjang> {
         );
       },
     );
+  }
+
+  Future transaksi(status, total) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    String? id = prefs.getString('id');
+    var url = Uri.parse("$endpoints/api/transaksi");
+    var header = {'Authorization': 'Bearer $token'};
+    var body = {'id_user': id, 'status': status, 'total': total};
+    try {
+      final response = await http.post(url, headers: header, body: body);
+      if (response.statusCode == 200) {
+        print(response.body);
+        final jsonData = jsonDecode(response.body);
+
+        setState(() {
+          data = jsonData['data'];
+        });
+      } else if (response.statusCode == 401) {
+        // ignore: use_build_context_synchronously
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) {
+          return const Login();
+        }));
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   void detail(id, nama_produk, kuantitas, id_keranjang) {
@@ -159,7 +190,7 @@ class _KeranjangState extends State<Keranjang> {
                 children: [
                   InkWell(
                     onTap: () {
-                      checkout();
+                      checkout(total);
                     },
                     child: Container(
                       height: 50,
