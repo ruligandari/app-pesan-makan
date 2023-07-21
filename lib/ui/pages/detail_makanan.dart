@@ -3,8 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:kedai_1818/services/api_endpoints.dart';
 import 'package:kedai_1818/shared/themes.dart';
 import 'package:kedai_1818/ui/pages/keranjang.dart';
@@ -147,17 +146,27 @@ class _DetailState extends State<Detail> {
         ),
         appBar: AppBar(
             actions: [
-              IconButton(
-                icon: const Icon(
-                  Icons.shopping_cart,
-                  color: Colors.black,
+              badge.Badge(
+                position: badge.BadgePosition.topEnd(top: 0, end: 3),
+                badgeContent: Text(
+                  '0',
+                  style: subTitleTextStyle.copyWith(
+                      color: whiteColor, fontSize: 11),
                 ),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return const Keranjang();
-                  }));
-                },
-              )
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return const Keranjang();
+                    }));
+                  },
+                  icon: Icon(
+                    Icons.shopping_cart_outlined,
+                    color: grey1Color,
+                    size: 30,
+                  ),
+                ),
+              ),
             ],
             title: Text(
               widget.nama_produk,

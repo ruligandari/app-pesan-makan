@@ -49,6 +49,45 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  Future logout() async {
+    // membuat alert dialog
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(
+              "Konfirmasi",
+              style: titleTextStyle,
+            ),
+            content: Text(
+              "Apakah anda yakin ingin keluar?",
+              style: subTitleTextStyle,
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    prefs.remove('token');
+                    prefs.remove('id');
+
+                    // ignore: use_build_context_synchronously
+                    Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (context) {
+                      return const Login();
+                    }));
+                  },
+                  child: const Text("Ya")),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Tidak")),
+            ],
+          );
+        });
+  }
+
   @override
   initState() {
     super.initState();
@@ -134,10 +173,7 @@ class _ProfileState extends State<Profile> {
                 ),
                 trailing: Icon(Icons.arrow_forward_ios),
                 onTap: () {
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) {
-                    return Login();
-                  }));
+                  logout();
                 },
               ),
             )

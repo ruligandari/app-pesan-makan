@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:kedai_1818/services/api_endpoints.dart';
 import 'package:kedai_1818/shared/themes.dart';
 import 'package:kedai_1818/ui/pages/keranjang.dart';
 import 'package:kedai_1818/ui/pages/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:badges/badges.dart' as badge;
 
 import 'detail_makanan.dart';
 
@@ -21,6 +21,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<dynamic> data = [];
   Map<String, dynamic> dataUser = {};
+  Map<String, dynamic> keranjang = {};
 
   TextEditingController cariController = TextEditingController();
 
@@ -77,6 +78,34 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future fetchTotalKeranjang() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    String? id = prefs.getString('id');
+    var url = Uri.parse("$endpoints/api/keranjang/total");
+    var header = {'Authorization': 'Bearer $token'};
+    var body = {'id_user': id};
+
+    try {
+      final response = await http.post(url, headers: header, body: body);
+      if (response.statusCode == 200) {
+        print(response.body);
+        final jsonData = jsonDecode(response.body);
+        setState(() {
+          keranjang = jsonData['data'];
+        });
+      } else if (response.statusCode == 401) {
+        // ignore: use_build_context_synchronously
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) {
+          return const Login();
+        }));
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   void searchData(String query) {
     if (query.isNotEmpty) {
       setState(() {
@@ -97,11 +126,13 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     fetchData();
     fetchDataUser();
+    fetchTotalKeranjang();
   }
 
   @override
   Widget build(BuildContext context) {
     var nama = dataUser['nama'];
+    String showKeranjang = keranjang['total'].toString();
     return Scaffold(
         appBar: AppBar(
           title: Text(
@@ -109,15 +140,20 @@ class _HomePageState extends State<HomePage> {
             style: titleTextStyle.copyWith(color: whiteColor),
           ),
           actions: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: InkWell(
-                onTap: () {
+            badge.Badge(
+              position: badge.BadgePosition.topEnd(top: 0, end: 3),
+              badgeContent: Text(
+                showKeranjang,
+                style:
+                    subTitleTextStyle.copyWith(color: whiteColor, fontSize: 11),
+              ),
+              child: IconButton(
+                onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) {
                     return const Keranjang();
                   }));
                 },
-                child: Icon(
+                icon: Icon(
                   Icons.shopping_cart_outlined,
                   color: whiteColor,
                   size: 30,

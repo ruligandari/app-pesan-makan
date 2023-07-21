@@ -16,60 +16,59 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  bool isLoading = false;
+
+  Future login() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      var url = Uri.parse('$endpoints/auth/login');
+      Map<String, String> data = {
+        'email': emailController.text,
+        'password': passwordController.text
+      };
+      http.Response response = await http.post(url, body: data);
+      if (response.statusCode == 200) {
+        Map<String, dynamic> result = jsonDecode(response.body);
+        var token = result['token'];
+        var idUser = result['data']['user_id'];
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('token', token);
+        prefs.setString('id', idUser);
+
+        setState(() {
+          isLoading = false;
+        });
+
+        // ignore: use_build_context_synchronously
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) {
+          return const BottomNavigation();
+        }));
+      } else if (response.statusCode == 400) {
+        // tampilkan snackbar
+        setState(() {
+          isLoading = false;
+        });
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email atau password salah'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
-    bool _isloading = false;
-
-    Future login() async {
-      setState(() {
-        _isloading = true;
-      });
-      try {
-        var url = Uri.parse('$endpoints/auth/login');
-        Map<String, String> data = {
-          'email': emailController.text,
-          'password': passwordController.text
-        };
-        http.Response response = await http.post(url, body: data);
-        if (response.statusCode == 200) {
-          setState(() {
-            _isloading = false;
-          });
-          Map<String, dynamic> result = jsonDecode(response.body);
-          var token = result['token'];
-          var idUser = result['data']['user_id'];
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('token', token);
-          prefs.setString('id', idUser);
-
-          // ignore: use_build_context_synchronously
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) {
-            return const BottomNavigation();
-          }));
-        } else if (response.statusCode == 400) {
-          setState(() {
-            _isloading = false;
-          });
-          // tampilkan snackbar
-          // ignore: use_build_context_synchronously
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Email atau password salah'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } catch (e) {
-        setState(() {
-          _isloading = false;
-        });
-        print(e);
-      }
-    }
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -152,20 +151,20 @@ class _LoginState extends State<Login> {
                         height: 16,
                       ),
                       ElevatedButton(
-                        onPressed: () async {
-                          _isloading ? null : await login();
+                        onPressed: () {
+                          login();
                         },
                         // ignore: sort_child_properties_last
-                        child: (_isloading == false)
+                        child: (isLoading == false)
                             ? Text(
                                 "Login",
                                 style: titleTextStyle,
                               )
-                            : const SizedBox(
-                                height: 20,
-                                width: 20,
+                            : SizedBox(
+                                height: 30,
+                                width: 30,
                                 child: CircularProgressIndicator(
-                                  color: Colors.grey,
+                                  color: grey1Color,
                                 ),
                               ),
                         style: ButtonStyle(
