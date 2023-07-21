@@ -77,6 +77,21 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void searchData(String query) {
+    if (query.isNotEmpty) {
+      setState(() {
+        data = data
+            .where((element) => element['nama_produk']
+                .toLowerCase()
+                .contains(query.toLowerCase()))
+            .toList();
+      });
+      return;
+    } else {
+      fetchData();
+    }
+  }
+
   @override
   initState() {
     super.initState();
@@ -153,6 +168,9 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.all(10),
                         child: TextField(
                           controller: cariController,
+                          onChanged: (value) {
+                            searchData(value);
+                          },
                           style: subTitleTextStyle.copyWith(fontSize: 14),
                           decoration: InputDecoration(
                             hintStyle: subTitleTextStyle.copyWith(

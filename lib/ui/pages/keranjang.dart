@@ -96,7 +96,7 @@ class _KeranjangState extends State<Keranjang> {
                     style: titleTextStyle.copyWith(fontSize: 14),
                   ),
                   onTap: () {
-                    transaksi(2, total);
+                    transaksi("2", total);
                   },
                 ),
               ),
@@ -128,10 +128,6 @@ class _KeranjangState extends State<Keranjang> {
       if (response.statusCode == 200) {
         print(response.body);
         final jsonData = jsonDecode(response.body);
-
-        setState(() {
-          data = jsonData['data'];
-        });
       } else if (response.statusCode == 401) {
         // ignore: use_build_context_synchronously
         Navigator.pushReplacement(context,
@@ -190,7 +186,7 @@ class _KeranjangState extends State<Keranjang> {
                 children: [
                   InkWell(
                     onTap: () {
-                      checkout(total);
+                      checkout(total.toString());
                     },
                     child: Container(
                       height: 50,
