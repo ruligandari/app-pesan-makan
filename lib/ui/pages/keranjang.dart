@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -128,6 +129,33 @@ class _KeranjangState extends State<Keranjang> {
       if (response.statusCode == 200) {
         print(response.body);
         final jsonData = jsonDecode(response.body);
+        var qrCode = jsonData['qrcode'].split(",").last;
+        Uint8List bytes = base64Decode(qrCode);
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(
+                  "Sukses",
+                  style: subTitleTextStyle,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                alignment: Alignment.center,
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Berhasil Melakukan Transaksi, Tunjukan Qr Code ini ke Kasir, Terima Kasih",
+                      style: titleTextStyle.copyWith(fontSize: 14),
+                    ),
+                    SizedBox(
+                        height: 200, width: 200, child: Image.memory(bytes))
+                  ],
+                ),
+              );
+            });
       } else if (response.statusCode == 401) {
         // ignore: use_build_context_synchronously
         Navigator.pushReplacement(context,
