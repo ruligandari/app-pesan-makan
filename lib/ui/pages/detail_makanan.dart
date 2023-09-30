@@ -304,6 +304,9 @@ class _DetailState extends State<Detail> {
                               textAlign: TextAlign.start,
                             ),
                           ),
+                          const SizedBox(
+                            height: 10,
+                          ),
                         ],
                       ),
                     ),

@@ -8,6 +8,7 @@ import 'package:kedai_1818/shared/themes.dart';
 import 'package:kedai_1818/ui/pages/detail_keranjang.dart';
 import 'package:kedai_1818/ui/pages/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dilevery.dart';
 
 class Keranjang extends StatefulWidget {
   const Keranjang({Key? key}) : super(key: key);
@@ -82,12 +83,17 @@ class _KeranjangState extends State<Keranjang> {
             children: [
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.house),
-                  title: Text(
-                    "Dilevery",
-                    style: titleTextStyle.copyWith(fontSize: 14),
-                  ),
-                ),
+                    leading: const Icon(Icons.house),
+                    title: Text(
+                      "Dilevery",
+                      style: titleTextStyle.copyWith(fontSize: 14),
+                    ),
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return Dilevery('1', total);
+                      }));
+                    }),
               ),
               Card(
                 child: ListTile(
@@ -108,6 +114,9 @@ class _KeranjangState extends State<Keranjang> {
                     "Take Away",
                     style: titleTextStyle.copyWith(fontSize: 14),
                   ),
+                  onTap: () {
+                    transaksi("3", total);
+                  },
                 ),
               ),
             ],
