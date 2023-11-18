@@ -408,6 +408,31 @@ class _DileveryState extends State<Dilevery> {
                 ),
               ),
             ),
+
+            Row(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(left: 10, top: 10),
+                  child: Text(
+                    "Catatan",
+                    style: titleTextStyle.copyWith(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+
+            Container(
+              margin: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  Text(
+                    "Saat ini kami hanya melayani pengiriman untuk 3 Kecamatan (Cigasong, Majalengka, Jatiwangi)\n\nTarif Ongkos Kirim:\nCigasong : Rp. 10.000\nMajalengka : Rp. 12.000\nJatiwangi : Rp. 15.000",
+                    style: subTitleTextStyle.copyWith(fontSize: 12),
+                  )
+                ],
+              ),
+            )
           ],
         ));
   }
