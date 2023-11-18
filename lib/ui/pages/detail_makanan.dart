@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:badges/badges.dart' as badge;
+import 'package:intl/intl.dart';
 import 'package:kedai_1818/services/api_endpoints.dart';
 import 'package:kedai_1818/shared/themes.dart';
 import 'package:kedai_1818/ui/pages/keranjang.dart';
@@ -99,6 +100,12 @@ class _DetailState extends State<Detail> {
         kuantitas--;
       }
     });
+  }
+
+  String formatUang(int nilai) {
+    final f = NumberFormat("#,###", "id_ID");
+
+    return f.format(nilai);
   }
 
   @override
@@ -219,7 +226,7 @@ class _DetailState extends State<Detail> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Rp. " + data['harga'],
+                                  "Rp. " + formatUang(int.parse(data['harga'])),
                                   style: titleTextStyle.copyWith(
                                       fontSize: 18, color: Colors.red),
                                   textAlign: TextAlign.start,

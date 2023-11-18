@@ -73,9 +73,24 @@ class _RiwayatState extends State<Riwayat> {
                                   borderRadius: BorderRadius.circular(10)),
                               10),
                           child: ListTile(
-                            title: Text(data[index]['nama_pembeli']),
-                            subtitle: Text(data[index]['no_transaksi']),
-                            trailing: Text(data[index]['status']),
+                            title: Text(
+                              data[index]['nama_pembeli'],
+                              style: titleTextStyle.copyWith(fontSize: 16),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(data[index]['no_transaksi'],
+                                    style: subTitleTextStyle.copyWith(
+                                        fontSize: 12)),
+                                Text(data[index]['status'],
+                                    style: subTitleTextStyle.copyWith(
+                                        fontSize: 12)),
+                              ],
+                            ),
+                            trailing: Text(data[index]['status_pesanan'],
+                                style:
+                                    subTitleTextStyle.copyWith(fontSize: 12)),
                             onTap: (() {
                               Navigator.push(
                                   context,
@@ -84,6 +99,7 @@ class _RiwayatState extends State<Riwayat> {
                                       data[index]['no_order'],
                                       data[index]['qr_code'],
                                       data[index]['total_harga'],
+                                      data[index]['encode'],
                                     );
                                   })));
                             }),

@@ -1,19 +1,22 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:http/http.dart' as http;
 import 'package:kedai_1818/shared/themes.dart';
+import 'package:kedai_1818/ui/pages/detail_transaksi.dart';
+import 'package:kedai_1818/ui/pages/riwayat.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/api_endpoints.dart';
+import '../widgets/bottom_navigation.dart';
 import 'login.dart';
 
 class Dilevery extends StatefulWidget {
-  String status;
-  String total;
+  final status;
+  final total;
   Dilevery(this.status, this.total);
 
   @override
@@ -21,6 +24,12 @@ class Dilevery extends StatefulWidget {
 }
 
 class _DileveryState extends State<Dilevery> {
+  Map<String, dynamic> data = {};
+  String ongkir = "";
+  String hasilBayar = "";
+  String hargaOngkir = "";
+  String totalPesanan = "";
+  String alamat = "";
   Future transaksi(status, total) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
@@ -34,6 +43,8 @@ class _DileveryState extends State<Dilevery> {
         print(response.body);
         final jsonData = jsonDecode(response.body);
         var qrCode = jsonData['qrcode'].split(",").last;
+        var encode = jsonData['encode'];
+        var idTransaksi = jsonData['no_order'];
         Uint8List bytes = base64Decode(qrCode);
         showDialog(
             context: context,
@@ -66,10 +77,88 @@ class _DileveryState extends State<Dilevery> {
                       "Tinggal Duduk Manis dan Tunggu Pesanan Anda",
                       style: titleTextStyle.copyWith(fontSize: 14),
                     ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    // tampilkan saldo
+                    Text(
+                      "Saldo Anda Saat Ini",
+                      style: titleTextStyle.copyWith(fontSize: 14),
+                    ),
+                    Text(
+                      "Rp. ${jsonData['saldo'] ?? "0"}",
+                      style: titleTextStyle.copyWith(
+                          fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
+                // tambahkan tombol oke direct ke home
+                actions: [
+                  InkWell(
+                    child: Container(
+                      height: 50,
+                      width: 300,
+                      decoration: BoxDecoration(
+                        color: yellowColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Text(
+                            "Lihat Transaksi",
+                            style: titleTextStyle.copyWith(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: ((context) {
+                          return DetailTransaksi(
+                              idTransaksi, qrCode, total, encode);
+                        })),
+                      );
+                    },
+                  )
+                ],
               );
             });
+      } else if (response.statusCode == 401) {
+        // ignore: use_build_context_synchronously
+        Navigator.pushAndRemoveUntil(context,
+            MaterialPageRoute(builder: ((context) {
+          return const Login();
+        })), (route) => false);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future fetchData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    String? id = prefs.getString('id');
+    var url = Uri.parse("$endpoints/api/bank/$id");
+    var header = {'Authorization': 'Bearer $token'};
+    try {
+      final response = await http.get(url, headers: header);
+      if (response.statusCode == 200) {
+        print(response.body);
+        final jsonData = jsonDecode(response.body);
+
+        setState(() {
+          data = jsonData['data'];
+          ongkir = jsonData['ongkir'];
+          alamat = jsonData['alamat'];
+
+          int totalBayar = int.parse(widget.total) + int.parse(ongkir);
+          hasilBayar = formatUang(totalBayar);
+          hargaOngkir = formatUang(int.parse(ongkir));
+          totalPesanan = formatUang(int.parse(widget.total));
+        });
       } else if (response.statusCode == 401) {
         // ignore: use_build_context_synchronously
         Navigator.pushReplacement(context,
@@ -82,12 +171,25 @@ class _DileveryState extends State<Dilevery> {
     }
   }
 
+  String formatUang(int nilai) {
+    final f = NumberFormat("#,###", "id_ID");
+
+    return f.format(nilai);
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: Container(
-          height: 100,
+          height: 160,
           width: double.infinity,
           color: Colors.white,
           child: Column(
@@ -95,17 +197,57 @@ class _DileveryState extends State<Dilevery> {
               Container(
                 alignment: Alignment.centerLeft,
                 margin: const EdgeInsets.only(left: 10, right: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: [
-                    Text("Total Pembayaran ",
-                        style: titleTextStyle.copyWith(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text("Rp. ${widget.total}",
-                        style: titleTextStyle.copyWith(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: orangeColor)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Total Pesanan ",
+                            style: titleTextStyle.copyWith(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text("Rp. $totalPesanan",
+                            style: titleTextStyle.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: orangeColor)),
+                      ],
+                    ),
+                    // buat garis horizontal
+                    const Divider(
+                      height: 10,
+                      thickness: 1,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Ongkir ",
+                            style: titleTextStyle.copyWith(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text("Rp. $hargaOngkir",
+                            style: titleTextStyle.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: orangeColor)),
+                      ],
+                    ),
+                    // buat garis horizontal
+                    const Divider(
+                      height: 10,
+                      thickness: 1,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Total Pembayaran ",
+                            style: titleTextStyle.copyWith(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text("Rp. ${hasilBayar}",
+                            style: titleTextStyle.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: orangeColor)),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -134,7 +276,7 @@ class _DileveryState extends State<Dilevery> {
                       ),
                     ),
                     onTap: () {
-                      transaksi(widget.status, widget.total);
+                      transaksi(widget.status, hasilBayar);
                     },
                   )
                 ],
@@ -168,36 +310,36 @@ class _DileveryState extends State<Dilevery> {
                   child: Row(
                     children: [
                       Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            color: grey1Color,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.home,
-                            color: Colors.white,
-                          )),
+                        height: 50,
+                        width: 50,
+                        decoration: BoxDecoration(
+                          color: grey1Color,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.home,
+                          color: Colors.white,
+                        ),
+                      ),
                       const SizedBox(
                         width: 10,
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Alamat Rumah",
-                            style: titleTextStyle.copyWith(fontSize: 16),
-                          ),
-                          Text(
-                            "Jl. Cigasong No. 20, Cigasong",
-                            style: titleTextStyle.copyWith(fontSize: 14),
-                          ),
-                          Text(
-                            "Kec. Cigasong, Kab. Majalengka",
-                            style: titleTextStyle.copyWith(
-                                fontSize: 14, overflow: TextOverflow.fade),
-                          ),
-                        ],
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Alamat Rumah",
+                              style: titleTextStyle.copyWith(fontSize: 16),
+                            ),
+                            Text(
+                              alamat,
+                              style: titleTextStyle.copyWith(fontSize: 14),
+                              softWrap: true,
+                            ),
+                          ],
+                        ),
                       ),
                       // radio button
                       const Spacer(),
@@ -249,12 +391,8 @@ class _DileveryState extends State<Dilevery> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Virtual Akun Bank Mandiri",
+                            "Rek: ${data['no_rekening'] ?? "-"}",
                             style: titleTextStyle.copyWith(fontSize: 16),
-                          ),
-                          Text(
-                            "86607085433",
-                            style: titleTextStyle.copyWith(fontSize: 14),
                           ),
                         ],
                       ),
@@ -264,59 +402,6 @@ class _DileveryState extends State<Dilevery> {
                         value: 1,
                         groupValue: 1,
                         onChanged: (value) {},
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Row(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(left: 10, top: 10),
-                  child: Text(
-                    "Cara Pembayaran",
-                    style: titleTextStyle.copyWith(
-                        fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            // cara pembayaran
-            Container(
-              margin: const EdgeInsets.only(left: 10, top: 10),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Buka Aplikasi Mandiri",
-                            style: titleTextStyle.copyWith(fontSize: 16),
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Text(
-                            "1. Pilih menu Virtual Akun,",
-                            style: titleTextStyle.copyWith(fontSize: 14),
-                          ),
-                          Text(
-                            "2. Masukan kode Virtual Akun diatas,",
-                            style: titleTextStyle.copyWith(fontSize: 14),
-                          ),
-                          Text(
-                            "3. Masukan jumlah  total pembayaran,",
-                            style: titleTextStyle.copyWith(fontSize: 14),
-                          ),
-                          Text(
-                            "4. Pilih Selesaikan Pembayaran.",
-                            style: titleTextStyle.copyWith(fontSize: 14),
-                          ),
-                        ],
                       ),
                     ],
                   ),

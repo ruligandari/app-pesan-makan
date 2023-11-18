@@ -138,30 +138,30 @@ class _ProfileState extends State<Profile> {
             const SizedBox(
               height: 20,
             ),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              child: ListTile(
-                leading: Icon(Icons.person),
-                title: Text(
-                  "Edit Profile",
-                  style: subTitleTextStyle,
-                ),
-                trailing: Icon(Icons.arrow_forward_ios),
-              ),
-            ),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              child: ListTile(
-                leading: Icon(Icons.local_shipping),
-                title: Text(
-                  "Alamat",
-                  style: subTitleTextStyle,
-                ),
-                trailing: Icon(Icons.arrow_forward_ios),
-              ),
-            ),
+            // Card(
+            //   shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(10)),
+            //   child: ListTile(
+            //     leading: Icon(Icons.person),
+            //     title: Text(
+            //       "Edit Profile",
+            //       style: subTitleTextStyle,
+            //     ),
+            //     trailing: Icon(Icons.arrow_forward_ios),
+            //   ),
+            // ),
+            // Card(
+            //   shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(10)),
+            //   child: ListTile(
+            //     leading: Icon(Icons.local_shipping),
+            //     title: Text(
+            //       "Alamat",
+            //       style: subTitleTextStyle,
+            //     ),
+            //     trailing: Icon(Icons.arrow_forward_ios),
+            //   ),
+            // ),
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),

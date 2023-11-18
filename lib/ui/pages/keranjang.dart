@@ -3,11 +3,13 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:kedai_1818/services/api_endpoints.dart';
 import 'package:kedai_1818/shared/themes.dart';
 import 'package:kedai_1818/ui/pages/detail_keranjang.dart';
 import 'package:kedai_1818/ui/pages/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'detail_transaksi.dart';
 import 'dilevery.dart';
 
 class Keranjang extends StatefulWidget {
@@ -139,6 +141,8 @@ class _KeranjangState extends State<Keranjang> {
         print(response.body);
         final jsonData = jsonDecode(response.body);
         var qrCode = jsonData['qrcode'].split(",").last;
+        var idTransaksi = jsonData['no_order'];
+        var encode = jsonData['encode'];
         Uint8List bytes = base64Decode(qrCode);
         showDialog(
             context: context,
@@ -156,13 +160,49 @@ class _KeranjangState extends State<Keranjang> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      "Berhasil Melakukan Transaksi, Tunjukan Qr Code ini ke Kasir, Terima Kasih",
+                      "Berhasil Melakukan Transaksi, Pesanan akan segera diproses",
                       style: titleTextStyle.copyWith(fontSize: 14),
                     ),
-                    SizedBox(
-                        height: 200, width: 200, child: Image.memory(bytes))
+                    const SizedBox(
+                        height: 200,
+                        width: 200,
+                        child: Icon(
+                          Icons.check_circle,
+                          size: 150,
+                          color: Colors.green,
+                        )),
                   ],
                 ),
+                actions: [
+                  InkWell(
+                    child: Container(
+                      height: 50,
+                      width: 300,
+                      decoration: BoxDecoration(
+                        color: yellowColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Text(
+                            "Lihat Transaksi",
+                            style: titleTextStyle.copyWith(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: ((context) {
+                          return DetailTransaksi(
+                              idTransaksi, qrCode, total, encode);
+                        })),
+                      );
+                    },
+                  )
+                ],
               );
             });
       } else if (response.statusCode == 401) {
@@ -183,6 +223,12 @@ class _KeranjangState extends State<Keranjang> {
         (MaterialPageRoute(
             builder: (context) =>
                 DetailKeranjang(id, nama_produk, kuantitas, id_keranjang))));
+  }
+
+  String formatUang(int nilai) {
+    final f = NumberFormat("#,###", "id_ID");
+
+    return f.format(nilai);
   }
 
   @override
@@ -211,7 +257,7 @@ class _KeranjangState extends State<Keranjang> {
               Container(
                 alignment: Alignment.centerLeft,
                 margin: const EdgeInsets.only(left: 10),
-                child: Text("Total : Rp. $total",
+                child: Text("Total : Rp. ${formatUang(total)}",
                     style: titleTextStyle.copyWith(
                         fontSize: 16, fontWeight: FontWeight.bold)),
               ),
@@ -285,7 +331,10 @@ class _KeranjangState extends State<Keranjang> {
                                 "x " + data[index]['kuantitas'],
                                 style: subTitleTextStyle.copyWith(fontSize: 13),
                               ),
-                              Text("Rp. " + data[index]['harga'],
+                              Text(
+                                  "Rp. " +
+                                      formatUang(
+                                          int.parse(data[index]['harga'])),
                                   style: subTitleTextStyle.copyWith(
                                       fontSize: 13, color: orangeColor)),
                             ],

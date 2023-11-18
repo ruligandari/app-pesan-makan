@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:kedai_1818/services/api_endpoints.dart';
 import 'package:kedai_1818/shared/themes.dart';
 import 'package:kedai_1818/ui/pages/keranjang.dart';
@@ -79,6 +80,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future fetchTotalKeranjang() async {
+    // set data awal jadi 0
+    setState(() {
+      keranjang = {'total': 0};
+    });
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
     String? id = prefs.getString('id');
@@ -119,6 +124,12 @@ class _HomePageState extends State<HomePage> {
     } else {
       fetchData();
     }
+  }
+
+  String formatUang(int nilai) {
+    final f = NumberFormat("#,###", "id_ID");
+
+    return f.format(nilai);
   }
 
   @override
@@ -306,7 +317,9 @@ class _HomePageState extends State<HomePage> {
                                               fontSize: 16),
                                         ),
                                         Text(
-                                          "Rp. " + data[index]['harga'],
+                                          "Rp. " +
+                                              formatUang(int.parse(
+                                                  data[index]['harga'])),
                                           style: subTitleTextStyle.copyWith(
                                               fontSize: 16, color: orangeColor),
                                         ),
